@@ -9,25 +9,23 @@
 
   <form id="meowlinterForm">
     <div>
-      <label for="filepath">Filepath:</label>
+      <input type="radio" id="filepathRadio" name="input_type" value="filepath">
+      <label for="filepathRadio">Filepath:</label>
       <input type="text" id="filepath" name="filepath">
     </div>
 
     <div>
-      <label for="filename">Filename:</label>
-      <input type="text" id="filename" name="filename">
-    </div>
-
-    <div>
-      <label for="code">Code:</label>
+      <input type="radio" id="codeRadio" name="input_type" value="code">
+      <label for="codeRadio">Code:</label><br>
+      Filename: <input type="text" id="filename" name="filename"><br>
       <textarea id="code" name="code"></textarea>
     </div>
 
     <button type="button" id="scanButton">Scan</button>
-    <button type="button" id="saveButton" disabled>Save Report</button> 
+    <button type="button" id="saveButton" disabled>Save Report</button>
   </form>
 
-  <div id="output"></div> 
+  <div id="output"></div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -37,6 +35,29 @@
       const scanButton = document.getElementById('scanButton');
       const saveButton = document.getElementById('saveButton');
       const outputDiv = document.getElementById('output');
+      const filepathRadio = document.getElementById('filepathRadio');
+      const codeRadio = document.getElementById('codeRadio');
+
+      filepathRadio.addEventListener('change', function() {
+        if (filepathRadio.checked) {
+          filepathInput.disabled = false;
+          filenameInput.disabled = true;
+          codeInput.disabled = true;
+        } 
+      });
+
+      codeRadio.addEventListener('change', function() {
+        if (codeRadio.checked) {
+          filepathInput.disabled = true;
+          filenameInput.disabled = false;
+          codeInput.disabled = false;
+        }
+      });
+
+      // Initial state on page load
+      filepathRadio.checked = true; 
+      filenameInput.disabled = true;
+      codeInput.disabled = true;
 
       scanButton.addEventListener('click', function() {
         let filepath = filepathInput.value.trim(); 
@@ -45,18 +66,17 @@
 
         if (filepath || (code && filename)) {
           if (code && filename) {
-            // User provided code - check for file existence
             fetch(`/check_file?filename=${filename}`)
               .then(response => response.json())
               .then(data => {
                 if (data.exists) {
                   if (confirm(`A file named "${filename}" already exists. Do you want to overwrite it?`)) {
-                    runMeowlinter(filename, code); // Use filename as filepath
+                    runMeowlinter(filename, code); 
                   } else {
                     alert("File not overwritten. Please choose a different filename.");
                   }
                 } else {
-                  runMeowlinter(filename, code); // Use filename as filepath
+                  runMeowlinter(filename, code); 
                 }
               })
               .catch(error => {
@@ -64,7 +84,6 @@
                 alert("An error occurred while checking the file.");
               });
           } else {
-            // User provided filepath - no code to save
             runMeowlinter(filepath, null); 
           }
         } else {
@@ -72,7 +91,7 @@
         }
       });
 
-      saveButton.addEventListener('click', function() {
+      saveButton.addEventListener('click', function () {
         const htmlContent = outputDiv.innerHTML;
         const blob = new Blob([htmlContent], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
@@ -82,7 +101,7 @@
         a.download = 'meowlinter_report.html';
         a.click();
 
-        URL.revokeObjectURL(url); 
+        URL.revokeObjectURL(url);
       });
 
       function runMeowlinter(filepath, code) {
@@ -103,14 +122,14 @@
           .then(response => response.text())
           .then(html => {
             outputDiv.innerHTML = html;
-            saveButton.disabled = false; 
+            saveButton.disabled = false;
           })
           .catch(error => {
             console.error("Error during scan:", error);
             outputDiv.innerHTML = "An error occurred during the scan.";
           })
           .finally(() => {
-            scanButton.disabled = false; 
+            scanButton.disabled = false;
           });
       }
     });
