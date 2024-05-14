@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Meowlinter Frontend</title>
+</head>
+<body>
+  <h1>Meowlinter</h1>
+
+  <label for="filepath">Enter file or directory path:</label>
+  <input type="text" id="filepath" name="filepath" value=".">
+  <button onclick="runMeowlinter()">Scan</button>
+
+  <div id="output">
+    </div>
+
+  <button onclick="saveReport()" disabled>Save Report</button>
+
+  <script>
+    function runMeowlinter() {
+      let filepath = document.getElementById("filepath").value;
+
+      // Basic input validation
+      if (filepath.trim() === "") {
+        alert("Please enter a file or directory path.");
+        return;
+      }
+
+      // Use Fetch API to call your Python backend
+      fetch(`/scan?filepath=${filepath}`)
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById("output").innerHTML = html;
+          document.querySelector("button[onclick='saveReport()']").disabled = false;
+        })
+        .catch(error => {
+          document.getElementById("output").innerHTML = 
+            "<p>An error occurred while running Meowlinter.</p>";
+          console.error("Error:", error);
+        });
+    }
+
+    function saveReport() {
+      // Get the HTML content from the output div
+      let htmlContent = document.getElementById("output").innerHTML;
+
+      // Create a Blob object from the HTML content
+      let blob = new Blob([htmlContent], { type: "text/html" });
+
+      // Create a temporary link element
+      let link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "meowlinter_report.html";
+
+      // Append the link to the body and simulate a click to trigger the download
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up by removing the temporary link element
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
