@@ -1,4 +1,4 @@
-// Test file to show bug in 1.27
+// Test file
 
 #include	<stdio.h>
 #include	<stdlib.h>
@@ -29,10 +29,10 @@ int main()
 }
 
 /* end with spaces and no \n or \r */
-   
+
   meowlinter secureapp | less
   meowlinter --error-level=4 myproject
-  meowlinter --patch=mypatch.patch myproject 
-  meowlinter --inputs myproject 
+  meowlinter --patch=mypatch.patch myproject
+  meowlinter --inputs myproject
   meowlinter --regex "CWE-120|CWE-126" myproject
-  meowlinter --regex "CWE-120|CWE-126" myproject 
+  meowlinter --regex "CWE-120|CWE-126" myproject

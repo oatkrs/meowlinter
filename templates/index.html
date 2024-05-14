@@ -1,63 +1,120 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Meowlinter Frontend</title>
+  <title>Meowlinter</title>
 </head>
 <body>
+
   <h1>Meowlinter</h1>
 
-  <label for="filepath">Enter file or directory path:</label>
-  <input type="text" id="filepath" name="filepath" value=".">
-  <button onclick="runMeowlinter()">Scan</button>
-
-  <div id="output">
+  <form id="meowlinterForm">
+    <div>
+      <label for="filepath">Filepath:</label>
+      <input type="text" id="filepath" name="filepath">
     </div>
 
-  <button onclick="saveReport()" disabled>Save Report</button>
+    <div>
+      <label for="filename">Filename:</label>
+      <input type="text" id="filename" name="filename">
+    </div>
+
+    <div>
+      <label for="code">Code:</label>
+      <textarea id="code" name="code"></textarea>
+    </div>
+
+    <button type="button" id="scanButton">Scan</button>
+    <button type="button" id="saveButton" disabled>Save Report</button> 
+  </form>
+
+  <div id="output"></div> 
 
   <script>
-    function runMeowlinter() {
-      let filepath = document.getElementById("filepath").value;
+    document.addEventListener('DOMContentLoaded', function() {
+      const filepathInput = document.getElementById('filepath');
+      const codeInput = document.getElementById('code');
+      const filenameInput = document.getElementById('filename');
+      const scanButton = document.getElementById('scanButton');
+      const saveButton = document.getElementById('saveButton');
+      const outputDiv = document.getElementById('output');
 
-      // Basic input validation
-      if (filepath.trim() === "") {
-        alert("Please enter a file or directory path.");
-        return;
-      }
+      scanButton.addEventListener('click', function() {
+        let filepath = filepathInput.value.trim(); 
+        let code = codeInput.value;
+        let filename = filenameInput.value.trim();
 
-      // Use Fetch API to call your Python backend
-      fetch(`/scan?filepath=${filepath}`)
-        .then(response => response.text())
-        .then(html => {
-          document.getElementById("output").innerHTML = html;
-          document.querySelector("button[onclick='saveReport()']").disabled = false;
+        if (filepath || (code && filename)) {
+          if (code && filename) {
+            // User provided code - check for file existence
+            fetch(`/check_file?filename=${filename}`)
+              .then(response => response.json())
+              .then(data => {
+                if (data.exists) {
+                  if (confirm(`A file named "${filename}" already exists. Do you want to overwrite it?`)) {
+                    runMeowlinter(filename, code); // Use filename as filepath
+                  } else {
+                    alert("File not overwritten. Please choose a different filename.");
+                  }
+                } else {
+                  runMeowlinter(filename, code); // Use filename as filepath
+                }
+              })
+              .catch(error => {
+                console.error("Error checking file:", error);
+                alert("An error occurred while checking the file.");
+              });
+          } else {
+            // User provided filepath - no code to save
+            runMeowlinter(filepath, null); 
+          }
+        } else {
+          alert("Please enter a filepath or provide code and a filename.");
+        }
+      });
+
+      saveButton.addEventListener('click', function() {
+        const htmlContent = outputDiv.innerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'meowlinter_report.html';
+        a.click();
+
+        URL.revokeObjectURL(url); 
+      });
+
+      function runMeowlinter(filepath, code) {
+        scanButton.disabled = true;
+        saveButton.disabled = true;
+        outputDiv.innerHTML = "Scanning...";
+
+        let formData = new FormData();
+        formData.append('filepath', filepath);
+        if (code) {
+          formData.append('code', code); 
+        }
+
+        fetch('/scan', {
+          method: 'POST',
+          body: formData
         })
-        .catch(error => {
-          document.getElementById("output").innerHTML = 
-            "<p>An error occurred while running Meowlinter.</p>";
-          console.error("Error:", error);
-        });
-    }
-
-    function saveReport() {
-      // Get the HTML content from the output div
-      let htmlContent = document.getElementById("output").innerHTML;
-
-      // Create a Blob object from the HTML content
-      let blob = new Blob([htmlContent], { type: "text/html" });
-
-      // Create a temporary link element
-      let link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "meowlinter_report.html";
-
-      // Append the link to the body and simulate a click to trigger the download
-      document.body.appendChild(link);
-      link.click();
-
-      // Clean up by removing the temporary link element
-      document.body.removeChild(link);
-    }
+          .then(response => response.text())
+          .then(html => {
+            outputDiv.innerHTML = html;
+            saveButton.disabled = false; 
+          })
+          .catch(error => {
+            console.error("Error during scan:", error);
+            outputDiv.innerHTML = "An error occurred during the scan.";
+          })
+          .finally(() => {
+            scanButton.disabled = false; 
+          });
+      }
+    });
   </script>
+
 </body>
 </html>
