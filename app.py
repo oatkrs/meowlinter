@@ -12,7 +12,7 @@ def index():
 def scan():
     filepath = request.form.get('filepath')
     code = request.form.get('code')
-    python_path = "python"  # Set your desired Python interpreter here
+    python_path = "python"
 
     if code:
         try:
