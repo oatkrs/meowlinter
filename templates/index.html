@@ -1,139 +1,117 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  
+  <link rel = "stylesheet" type = "text/css" href="{{ url_for('static', filename = 'css/style.css') }}">
+
+  {{ dropzone.load_css() }}
+  {{ dropzone.style('border: 2px dashed #a5117e; margin: 10%; min-height: 20vh; max-width: 30vw; background-color: #f1b7ef;') }}
+  
   <title>Meowlinter</title>
 </head>
 <body>
 
-  <h1>Meowlinter</h1>
+  
+  <div id="main">
 
-  <form id="meowlinterForm">
-    <div>
-      <input type="radio" id="filepathRadio" name="input_type" value="filepath">
-      <label for="filepathRadio">Filepath:</label>
-      <input type="text" id="filepath" name="filepath">
+    <h1>Meowlinter🐾</h1>
+
+    <div class="panel">
+      
+      <button class="panelbtn" onclick="showContent('filesel')">Select File</button>
+      <button class="panelbtn" onclick="showContent('code')">Paste Code</button>
+      
     </div>
 
-    <div>
-      <input type="radio" id="codeRadio" name="input_type" value="code">
-      <label for="codeRadio">Code:</label><br>
-      Filename: <input type="text" id="filename" name="filename"><br>
-      <textarea id="code" name="code"></textarea>
+    <div class="content" id="filesel">
+
+      <h2>Select file for vulnerability assessment</h2>
+      
+      <div class="box">
+        {{ dropzone.create(action='scan') }}
+        {{ dropzone.load_js() }}
+        {{ dropzone.config() }}
+      </div>
+
     </div>
 
-    <button type="button" id="scanButton">Scan</button>
-    <button type="button" id="saveButton" disabled>Save Report</button>
-  </form>
+    <div class="content" id="code">
+      <h2>Code Input</h2>
 
-  <div id="output"></div>
+      <label for="fileName">Enter a suitable filename with extension (.c / .cpp): </label>
+      <input type="text" name="fileName" id="fN">
+
+      <form>
+
+        <textarea id="codeTex" placeholder="Paste your code here"></textarea>
+
+      </form>
+      <button id="submit" onclick="codeScan()">Submit</button>
+      
+    </div>
+  </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const filepathInput = document.getElementById('filepath');
-      const codeInput = document.getElementById('code');
-      const filenameInput = document.getElementById('filename');
-      const scanButton = document.getElementById('scanButton');
-      const saveButton = document.getElementById('saveButton');
-      const outputDiv = document.getElementById('output');
-      const filepathRadio = document.getElementById('filepathRadio');
-      const codeRadio = document.getElementById('codeRadio');
+    function showContent(id) {
+      var content = document.getElementsByClassName('content');
+      for (var i = 0; i < content.length; i++) {
+        content[i].style.display = 'none';
+      }
+      document.getElementById(id).style.display = 'block';
+    }
+    document.getElementById('filesel').style.display = 'block';
 
-      filepathRadio.addEventListener('change', function() {
-        if (filepathRadio.checked) {
-          filepathInput.disabled = false;
-          filenameInput.disabled = true;
-          codeInput.disabled = true;
-        } 
-      });
+    function codeScan() {
+      // check if file name has correct extension
+      var fileName = document.getElementById('fN').value;
+      var ext = fileName.split('.');
 
-      codeRadio.addEventListener('change', function() {
-        if (codeRadio.checked) {
-          filepathInput.disabled = true;
-          filenameInput.disabled = false;
-          codeInput.disabled = false;
-        }
-      });
+      if ( ext.length != 2  || ext[1] != 'c' && ext[1] != 'cpp' || ext[0] == '') {
+        alert('Invalid file name. Please enter a valid file name with extension (.c / .cpp)');
+        return;
+      }
 
-      // Initial state on page load
-      filepathRadio.checked = true; 
-      filenameInput.disabled = true;
-      codeInput.disabled = true;
-
-      scanButton.addEventListener('click', function() {
-        let filepath = filepathInput.value.trim(); 
-        let code = codeInput.value;
-        let filename = filenameInput.value.trim();
-
-        if (filepath || (code && filename)) {
-          if (code && filename) {
-            fetch(`/check_file?filename=${filename}`)
-              .then(response => response.json())
-              .then(data => {
-                if (data.exists) {
-                  if (confirm(`A file named "${filename}" already exists. Do you want to overwrite it?`)) {
-                    runMeowlinter(filename, code); 
-                  } else {
-                    alert("File not overwritten. Please choose a different filename.");
-                  }
-                } else {
-                  runMeowlinter(filename, code); 
-                }
-              })
-              .catch(error => {
-                console.error("Error checking file:", error);
-                alert("An error occurred while checking the file.");
-              });
+      fetch(`/check_file?filename=${fileName}`)
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        if (data.exists) {
+          if (confirm(`A file named "${fileName}" already exists. Do you want to overwrite it?`)) {
+            sendCode();
           } else {
-            runMeowlinter(filepath, null); 
+            alert("File not overwritten. Please choose a different filename.");
           }
         } else {
-          alert("Please enter a filepath or provide code and a filename.");
+          sendCode();
         }
-      });
+      })
+      
+    }
 
-      saveButton.addEventListener('click', function () {
-        const htmlContent = outputDiv.innerHTML;
-        const blob = new Blob([htmlContent], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'meowlinter_report.html';
-        a.click();
-
-        URL.revokeObjectURL(url);
-      });
-
-      function runMeowlinter(filepath, code) {
-        scanButton.disabled = true;
-        saveButton.disabled = true;
-        outputDiv.innerHTML = "Scanning...";
-
-        let formData = new FormData();
-        formData.append('filepath', filepath);
-        if (code) {
-          formData.append('code', code); 
-        }
-
-        fetch('/scan', {
-          method: 'POST',
-          body: formData
-        })
-          .then(response => response.text())
-          .then(html => {
-            outputDiv.innerHTML = html;
-            saveButton.disabled = false;
-          })
-          .catch(error => {
-            console.error("Error during scan:", error);
-            outputDiv.innerHTML = "An error occurred during the scan.";
-          })
-          .finally(() => {
-            scanButton.disabled = false;
-          });
-      }
-    });
+    function sendCode() {
+      //send post request to server with filename and code
+      var fileName = document.getElementById('fN').value;
+      var code = document.getElementById('codeTex').value;
+      // create virtual form with submit to /scan and submit it
+      var form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/scan';
+      var hiddenField = document.createElement('input');
+      hiddenField.type = 'hidden';
+      hiddenField.name = 'fileName';
+      hiddenField.value = fileName;
+      form.appendChild(hiddenField);
+      hiddenField = document.createElement('input');
+      hiddenField.type = 'hidden';
+      hiddenField.name = 'code';
+      hiddenField.value = code;
+      form.appendChild(hiddenField);
+      document.body.appendChild(form);
+      form.submit();
+    }
   </script>
-
 </body>
 </html>

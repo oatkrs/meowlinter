@@ -1,0 +1,138 @@
+body {
+    background-color: #f1b7ef;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    color: #5f304ec6;
+    font-size: 30px;
+    margin: 1rem;
+    margin-left: 0;
+    margin-top: 0;
+    padding: 0;
+}
+
+h2 {
+    color: #5f304ec6;
+    font-size: 24px;
+    margin: 1rem;
+    margin-left: 0;
+    margin-top: 0;
+    padding: 0;
+}
+
+#main{
+    display: flexbox;
+    justify-content: center;
+    align-items: center;
+    padding: 2%;
+    height: 80vh;
+}
+
+.panel {
+    font-family: miracode;
+    font-weight: 700;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    
+}
+
+.panel button {
+    color: rgb(92, 11, 84);
+    padding: 1rem;
+    background-color: #d78fd7;
+    border-radius: 10px;
+    float: left;
+    cursor: pointer;
+    transition: 0.2s;
+    border-color: #a5117e;
+}
+
+.panel button.active {
+    background-color: #a5117e;
+}
+
+.panel button:disabled {
+    cursor: not-allowed;
+}
+
+.panel button:hover {
+    background-color: #dd69e1;
+}
+
+.content {
+    height: 100%;
+    display: none;
+    padding: 1rem;
+    background-color: #e4a1e1;
+    color: rgb(67, 13, 53);
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-weight: 400;
+    border-radius: 10px;
+    margin-top: 1rem;
+}
+
+.box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* styling for textarea for writing code */
+
+form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+textarea {
+    padding: 1rem;
+    background-color: #f1b7ef;
+    color: rgb(67, 13, 53);
+    font-family: monospace;
+    font-weight: 400;
+    font-size: 16px;
+    border-radius: 10px;
+    border-color: #a5117e;
+    resize: none;
+    width: 100vw;
+    height: 60vh;
+}
+
+textarea:focus {
+    outline: none;
+}
+
+input {
+    background-color: #f1b7ef;
+    color: rgb(67, 13, 53);
+    font-family: monospace;
+    font-weight: 400;
+    font-size: 16px;
+    border-radius: 2px;
+    border-color: #a5117e;
+    transition: 0.2s;
+}
+
+input:focus {
+    outline: none;
+}
+
+#submit {
+    padding: 1rem;
+    background-color: #d78fd7;
+    color: rgb(67, 13, 53);
+    font-weight: 400;
+    font-size: 16px;
+    border-radius: 10px;
+    border-color: #a5117e;
+    cursor: pointer;
+    transition: 0.2s;
+}
