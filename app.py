@@ -1,6 +1,6 @@
 import subprocess
 import os
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, redirect, url_for
 from flask_cors import CORS
 from flask_dropzone import Dropzone
 
@@ -12,9 +12,6 @@ app.config.update(
     DROPZONE_ALLOWED_FILE_TYPE='.c,.cpp',
     DROPZONE_MAX_FILE_SIZE=3024,
     DROPZONE_MAX_FILES=1,
-    DROPZONE_IN_FORM=True,
-    DROPZONE_UPLOAD_ON_CLICK=True,
-    DROPZONE_UPLOAD_ACTION='scan',
     DROPZONE_TIMEOUT=5*60*1000
 )
 
@@ -26,8 +23,6 @@ def index():
 
 @app.route('/scan', methods=['POST'])
 def scan():
-
-    print(request.form)
 
     filename = request.form.get('fileName')
     code = request.form.get('code')
@@ -47,7 +42,7 @@ def scan():
 
     try:
         meowlinter_path = os.path.join(os.path.dirname(__file__), 'meowlinter.py')
-        command = [python_path, meowlinter_path, "--html", filepath]
+        command = [python_path, meowlinter_path, "--csv", filepath,'>', 'output.csv']
         process = subprocess.Popen(command, stdout=subprocess.PIPE, env=os.environ.copy())
         output, error = process.communicate()
 
@@ -60,6 +55,34 @@ def scan():
         error_log.append(f"Error during scan: {e}")
 
     return render_template('result.html', result=result, error_log=error_log)
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    f = request.files.get('file')
+    filepath = os.path.join(os.path.dirname(__file__), f.filename)
+    f.save(filepath)
+
+    python_path = "python"
+
+    error_log = []
+    
+    try:
+        meowlinter_path = os.path.join(os.path.dirname(__file__), 'meowlinter.py')
+        command = [python_path, meowlinter_path, "--csv", filepath,'>', 'output.csv']
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, env=os.environ.copy())
+        output, error = process.communicate()
+
+        if error:
+            error_log.append(f"Error during scan: {error}")
+
+        result = output.decode('utf-8')
+
+    except Exception as e:
+        error_log.append(f"Error during scan: {e}")
+
+    return render_template('result.html', result=result, error_log=error_log)
+
+
 
 @app.route('/check_file')
 def check_file():
