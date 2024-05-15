@@ -42,7 +42,7 @@ def scan():
 
     try:
         meowlinter_path = os.path.join(os.path.dirname(__file__), 'meowlinter.py')
-        command = [python_path, meowlinter_path, "--csv", filepath,'>', 'output.csv']
+        command = [python_path, meowlinter_path, "--html", filepath,'>', 'output.csv']
         process = subprocess.Popen(command, stdout=subprocess.PIPE, env=os.environ.copy())
         output, error = process.communicate()
 
@@ -65,10 +65,10 @@ def upload():
     python_path = "python"
 
     error_log = []
-    
+
     try:
         meowlinter_path = os.path.join(os.path.dirname(__file__), 'meowlinter.py')
-        command = [python_path, meowlinter_path, "--csv", filepath,'>', 'output.csv']
+        command = [python_path, meowlinter_path, "--html", filepath,'>', 'output.csv']
         process = subprocess.Popen(command, stdout=subprocess.PIPE, env=os.environ.copy())
         output, error = process.communicate()
 

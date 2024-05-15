@@ -13,21 +13,24 @@
 
         <h1>Meowlinter🐾</h1>
         
-        {% if error %}
+        {% if error_log %}
         <div class="error">
             <h2>Error</h2>
-            <p>{{ error }}</p>
+            <p>{{ error_log }}</p>
         </div>
         {% endif %}
         
         {% if result %}
         <div class="result">
             <h2>Result</h2>
-            <!-- now display the result which is in html format -->
-            
+            <p id="resultbox"></p>
         </div>
         {% endif %}
     </div>
-        
+    <script>
+        var result = {{ result | tojson }};
+        var resultbox = document.getElementById('resultbox');
+        resultbox.innerHTML = result;
+    </script> 
 </body>
 </html>
