@@ -12,14 +12,15 @@ app.config.update(
     DROPZONE_ALLOWED_FILE_TYPE='.c,.cpp',
     DROPZONE_MAX_FILE_SIZE=3024,
     DROPZONE_MAX_FILES=1,
-    DROPZONE_TIMEOUT=5*60*1000
+    DROPZONE_TIMEOUT=5*60*1000,
+    DROPZONE_REDIRECT_VIEW='scanFile'
 )
 
 dropzone = Dropzone(app)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html',fileName='')
 
 @app.route('/scan', methods=['POST'])
 def scan():
@@ -58,9 +59,19 @@ def scan():
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    f = request.files.get('file')
-    filepath = os.path.join(os.path.dirname(__file__), f.filename)
-    f.save(filepath)
+    
+    if request.method == 'POST':
+        f = request.files.get('file')
+        filepath = os.path.join(os.path.dirname(__file__), f.filename)
+        f.save(filepath)
+        global latestfile
+        latestfile = f.filename
+    return render_template('index.html',filename=f.filename)
+
+@app.route('/scanFile')
+def scanFile():
+    filename = latestfile
+    filepath = os.path.join(os.path.dirname(__file__), filename)
 
     python_path = "python"
 
@@ -81,6 +92,8 @@ def upload():
         error_log.append(f"Error during scan: {e}")
 
     return render_template('result.html', result=result, error_log=error_log)
+
+
 
 
 
