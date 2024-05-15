@@ -6,6 +6,7 @@
     <title>Result</title>
 
     <link rel = "stylesheet" type = "text/css" href="{{ url_for('static', filename = 'css/style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -26,11 +27,36 @@
             <p id="resultbox"></p>
         </div>
         {% endif %}
+
+        <button onclick="downloadPDF()">Download PDF</button>
+        
+
     </div>
+    
     <script>
         var result = {{ result | tojson }};
         var resultbox = document.getElementById('resultbox');
         resultbox.innerHTML = result;
+
+        window.jsPDF = window.jspdf.jsPDF;
+        var docPDF = new jsPDF();
+
+        function downloadPDF(invoiceNo){
+
+            var elementHTML = document.querySelector("#resultbox");
+            docPDF.html(elementHTML, {
+                callback: function(docPDF) {
+                    docPDF.save(invoiceNo+'.pdf');
+                },
+                x: 15,
+                y: 15,
+                width: 170,
+                windowWidth: 650
+            });
+        }
     </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js "></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 </html>
