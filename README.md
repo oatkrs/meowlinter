@@ -47,5 +47,5 @@ Let’s make code safe, cool, and (of course) *super duper* secure! 🚀
 
 [Live Demo]
 
-![Mode 1](1.png) 
-![Mode 2](2.png) 
+![Mode 1](https://github.com/oatkrs/meowlinter/blob/main/1.png?raw=true) 
+![Mode 2](https://github.com/oatkrs/meowlinter/blob/main/2.png?raw=true) 
